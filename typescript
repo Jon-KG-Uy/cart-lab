@@ -1,0 +1,463 @@
+Script started on Mon 06 Mar 2017 02:05:54 AM EST
+]0;juy@erdos:~/CISC2200/hw/cart[juy@erdos cart]$ cat product.h product.cpp main.cpp
+/*************************
+**Jonathan Uy		**
+**Professor Kounavelis  **
+**1/31/17		**
+**product.h		**
+*************************/
+
+#ifndef PRODUCT_H
+#define PRODUCT_H
+
+struct productType
+{
+    string product;
+    double price;
+    struct productType *link;
+};
+
+
+class Product
+{
+   public:
+      Product();
+      int  getCurrentSize();
+      bool isEmpty();
+      void add(string, double);
+      bool remove(string);
+      int  getFreq(string);
+      bool contains(string);
+      void display();
+      
+   private:
+      struct productType *anchor;
+      struct productType *end;
+      int numOfProducts;
+      int count;
+      double total;
+
+};
+#endif
+/*
+ * Jonathan Uy
+ * Professor Kounavelis
+ * 1/31/17
+ * Implementation file for class "Product" 
+ */
+
+Product::Product()
+{
+    anchor = NULL;
+    end = NULL;
+    numOfProducts = 0;
+    total = 0.0;
+}
+
+int Product::getCurrentSize()
+{
+
+return numOfProducts;
+}
+
+bool Product::isEmpty()
+{
+    bool empty = false;
+
+    if(numOfProducts == 0)
+	empty = true;
+
+return empty;
+}
+
+void Product::add(string product, double price)
+{
+    struct productType *node;
+
+    if(anchor == NULL)
+    {
+	anchor = new productType;
+
+	anchor->product = product;
+	anchor->price = price;
+	anchor->link = NULL;
+
+	end = anchor;
+
+	numOfProducts++;
+    }
+
+    else
+    {
+	node = new productType;
+	
+	node->product = product;
+	node->price = price;
+	node->link = NULL;
+
+	end->link = node;
+	end = node;
+
+	numOfProducts++;
+    }
+
+    total += price;
+}
+
+bool Product::remove(string product)
+{
+    bool remove = false;
+
+    struct productType *removePtr, *prevPtr;//two pointers needed for relink
+
+    removePtr = prevPtr = anchor;//start with anchor
+
+    if(anchor == NULL)
+    {
+	remove = false;
+    }
+
+    else
+    {
+	while(removePtr != end)
+        {
+	    prevPtr = removePtr;//sets temp to removePtr before increment
+	    removePtr = removePtr->link;//move to next node
+	
+            if(removePtr->product == product)
+	    {
+		prevPtr->link = removePtr->link;//previous node link = current node link
+
+		numOfProducts--;
+		total -= removePtr->price;
+
+		remove = true;
+		break;  
+	    }
+        }
+
+	prevPtr = removePtr;//sets temp to removePtr before increment
+	removePtr = removePtr->link;//move to next node
+	
+	if(removePtr->product == product)//checks if remove is end
+        {   
+	    end = prevPtr;//end = node before removal
+      
+            numOfProducts--;
+            total -= removePtr->price;
+            remove = true;
+        }
+    }  
+return remove;
+}
+
+int Product::getFreq(string product)
+{
+    struct productType *findPtr;
+
+    findPtr = anchor;
+
+    while(findPtr != end)
+    {
+	if(findPtr->product == product)
+	{
+	    count++;
+	}
+	
+	findPtr = findPtr->link;
+    }
+
+return count; 
+}
+
+bool Product::contains(string product)
+{
+    bool find = false;
+
+    struct productType *findPtr;
+
+    findPtr = anchor;
+
+    if(anchor == NULL)
+    {
+	find = false;
+    }
+
+    else
+    {
+        while(findPtr != end)
+        {
+	    if(findPtr->product == product)
+	    {
+	        find = true;
+	        break;
+            }
+	
+	    findPtr = findPtr->link;//cycles through list, stops before end
+        }
+
+        if(findPtr->product == product)//checks end
+        {
+	    find = true;
+        }
+    }
+return find;
+}
+
+void Product::display()
+{
+    struct productType *displayPtr;
+
+    displayPtr = anchor;
+
+    if(anchor == NULL)
+    {
+    }
+
+    else
+    {
+        while(displayPtr != end)//cuts off end
+        {
+	     cout << "Product: " << displayPtr->product <<endl;
+             cout << "Price: " <<  displayPtr->price << endl << endl;
+        
+             displayPtr = displayPtr->link;
+        }
+
+        if(displayPtr == end)//display end
+        {
+	     cout << "Product: " << displayPtr->product <<endl;
+             cout << "Price: " <<  displayPtr->price << endl << endl;    
+        }
+    }
+
+    cout << endl << endl;
+    cout << "Total number of Products: " << getCurrentSize() <<endl;
+    cout << "Total Price: " << total <<endl;
+}
+/*************************
+**Jonathan Uy		**
+**Professor Kounavelis	**
+**1/31/17		**
+**main.cpp		**
+*************************/
+
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <iomanip>
+#include <unistd.h>
+using namespace std;
+
+#include "product.h"
+#include "product.cpp"
+
+Product cart;
+
+int main()
+{
+   string input, prod, price;
+
+   while (1)
+   {
+      system("clear");
+      cart.display();
+
+      cout << endl << endl;
+      cout << "Enter A=Add, R=Remove, C=Contains or Q=quit : ";
+      getline(cin,input);
+
+      if (input.length() >= 1)
+      {
+         if (input.at(0) == 'Q'|| input.at(0) == 'q')
+         {
+            break;
+         }
+         else if (input.at(0) == 'A' || input.at(0) == 'a') 
+         {
+            cout << endl << endl;
+            cout << " Enter the Product Name (ADD) : ";
+            getline(cin,prod);
+            cout << "Enter the Product Price (ADD) : ";
+            getline(cin,price);
+
+            cart.add(prod, atof(price.c_str()));
+         }
+         else if (input.at(0) == 'R' || input.at(0) == 'r')
+         {
+             if (cart.isEmpty())
+             {
+                cout << endl << endl << "Sorry. The cart is empty." << endl;
+                sleep (3);
+             }
+
+             else
+             {
+                cout << endl << endl;
+                cout << " Enter the Product Name (REMOVE) : ";
+                getline(cin,prod);
+
+                if (cart.remove(prod) == true)
+                {
+                   cout << endl << endl 
+                        << " ***** Product is being removed from the cart!......" << endl;
+ 
+                   sleep (3);
+                }
+
+                else
+                {
+                   cout << endl << endl 
+                        << " ***** The product was NOT found in the cart! ***** " << endl;
+
+                   sleep (3);
+                }
+             }
+         }
+
+         else if (input.at(0) == 'C' || input.at(0) == 'c')
+         {
+             if (cart.isEmpty())
+             {
+                cout << endl << endl << "Sorry. The cart is empty." << endl;
+                sleep (3);
+             }
+
+             else
+             {
+                cout << endl << endl;
+                cout << " Enter the Product Name (CONTAINS) : ";
+                getline(cin,prod);
+
+                if (cart.contains(prod))
+                {
+                 cout << endl << endl 
+                     << " ***** Yes. The product is in the cart! ***** " << endl
+		     << "You have " << cart.getFreq(prod) << " of " "" << prod << "" " in the cart." <<endl;
+                   sleep (3);
+                }
+
+                else
+                {
+                  cout << endl << endl 
+                       << " ***** No. The product is not in the cart! ***** " << endl;
+
+                  sleep (3);
+                }
+             }
+         }
+
+         else
+         {
+            continue;
+         }
+      }
+   }//end while
+return 0;
+}//end main
+]0;juy@erdos:~/CISC2200/hw/cart[juy@erdos cart]$ g++ main.cpp
+]0;juy@erdos:~/CISC2200/hw/cart[juy@erdos cart]$ ./a.out
+[3J[H[2J
+
+Total number of Products: 0
+Total Price: 0
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : a
+
+
+ Enter the Product Name (ADD) : milk
+Enter the Product Price (ADD) : 3.99
+[3J[H[2JProduct: milk
+Price: 3.99
+
+
+
+Total number of Products: 1
+Total Price: 3.99
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : a
+
+
+ Enter the Product Name (ADD) : juice
+Enter the Product Price (ADD) : 4.99
+[3J[H[2JProduct: milk
+Price: 3.99
+
+Product: juice
+Price: 4.99
+
+
+
+Total number of Products: 2
+Total Price: 8.98
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : a
+
+
+ Enter the Product Name (ADD) : banans as
+Enter the Product Price (ADD) : 6.99
+[3J[H[2JProduct: milk
+Price: 3.99
+
+Product: juice
+Price: 4.99
+
+Product: bananas
+Price: 6.99
+
+
+
+Total number of Products: 3
+Total Price: 15.97
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : c
+
+
+ Enter the Product Name (CONTAINS) : juice
+
+
+ ***** Yes. The product is in the cart! ***** 
+You have 1 of juice in the cart.
+[3J[H[2JProduct: milk
+Price: 3.99
+
+Product: juice
+Price: 4.99
+
+Product: bananas
+Price: 6.99
+
+
+
+Total number of Products: 3
+Total Price: 15.97
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : r
+
+
+ Enter the Product Name (REMOVE) : juice
+
+
+ ***** Product is being removed from the cart!......
+[3J[H[2JProduct: milk
+Price: 3.99
+
+Product: bananas
+Price: 6.99
+
+
+
+Total number of Products: 2
+Total Price: 10.98
+
+
+Enter A=Add, R=Remove, C=Contains or Q=quit : q
+]0;juy@erdos:~/CISC2200/hw/cart[juy@erdos cart]$ exit
+exit
+
+Script done on Mon 06 Mar 2017 02:06:52 AM EST
